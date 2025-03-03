@@ -102,7 +102,7 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
           autoComplete="off"
           autoCorrect="off"
           spellCheck="false"
-          className="w-full px-4 py-2 pl-10 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
+          className="w-full px-4 py-2 pl-10 rounded-lg bg-blue-900/95 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
         />
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
         {(searchTerm || selectedTeam) && (
@@ -147,7 +147,7 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
       {/* Teams Dropdown */}
       <div className="relative" ref={dropdownRef}>
         {showDropdown && (searchTerm.length >= 3 || selectedTeam) && (
-          <div className="fixed md:absolute left-0 right-0 md:relative z-50 w-full max-h-[40vh] md:max-h-60 overflow-y-auto rounded-lg bg-blue-900/95 backdrop-blur-sm border border-white/20 shadow-xl -webkit-overflow-scrolling-touch">
+          <div className="fixed md:absolute left-0 right-0 md:relative z-50 w-full max-h-[40vh] md:max-h-60 overflow-y-auto rounded-lg bg-blue-900 backdrop-blur-sm border border-white/20 shadow-xl -webkit-overflow-scrolling-touch">
             {filteredTeams.length > 0 ? (
               filteredTeams
                 .sort((a, b) => a.name.localeCompare(b.name))
@@ -175,7 +175,7 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
         <select
           value={selectedTeam}
           onChange={(e) => onSelectTeam(e.target.value)}
-          className={`w-full px-4 py-3 rounded-lg bg-white/10 backdrop-blur-sm border transition-all
+          className={`w-full px-4 py-3 rounded-lg bg-blue-900/95 backdrop-blur-sm border transition-all
             ${selectedTeam 
               ? 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.2)]' 
               : 'border-white/30 hover:border-white/50'} 
