@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CircleDot as BasketballIcon, Trophy, ArrowRight, Bell as WhistleIcon } from 'lucide-react';
 import OpenAI from 'openai';
+import { Analytics } from '@vercel/analytics/react';
 import TeamSelector from './components/TeamSelector';
 import MatchupDisplay from './components/MatchupDisplay';
 import { UNIQUE_NCAA_TEAMS } from './utils/team-utils';
@@ -31,7 +32,7 @@ const PROMPT_TYPES = {
   CELESTIAL_ARENA: {
     label: "Celestial Arena",
     generate: (team1: Team, team2: Team) => 
-      `Create a cosmic basketball matchup image featuring ${team1.name} in ${team1.colors} versus ${team2.name} in ${team2.colors} in a spectacular celestial arena. Show the teams competing in a basketball court floating in space, surrounded by galaxies, nebulae, and cosmic phenomena. Include dramatic lighting effects and stellar elements.`
+      `Create a cosmic basketball matchup image featuring ${team1.name} in ${team1.colors} versus ${team2.name} in ${team2.colors} in a spectacular celestial arena. Show the teams competing in a basketball court floating in space, surrounded by galaxies, nebulae, and cosmic phenomena. Try to include ${team1.mascot} and ${team2.mascot} in the image in some way.`
   },
 } as const;
 
@@ -116,6 +117,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 text-white relative overflow-hidden">
+      <Analytics />
       {/* Sideways Basketball Court Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Court outline */}
@@ -183,10 +185,10 @@ function App() {
                 id="promptType"
                 value={selectedPromptType}
                 onChange={(e) => setSelectedPromptType(e.target.value as PromptType)}
-                className="w-full max-w-md px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full max-w-md px-4 py-2 rounded-lg bg-blue-900/95 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
               >
                 {Object.entries(PROMPT_TYPES).map(([key, { label }]) => (
-                  <option key={key} value={key} className="bg-blue-900">
+                  <option key={key} value={key} className="bg-blue-900 text-white">
                     {label}
                   </option>
                 ))}
