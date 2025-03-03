@@ -225,12 +225,12 @@ function App() {
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 shadow-xl border border-white/20">
               <h2 className="text-2xl font-bold text-center mb-4">AI Generated Matchup Visual</h2>
               {generatingImage ? (
-                <div className="flex flex-col items-center justify-center h-[1024px]">
+                <div className="flex flex-col items-center justify-center min-h-[50vh] md:h-[1024px]">
                   <BasketballIcon className="h-12 w-12 text-orange-500 animate-spin" />
                   <p className="mt-4 text-blue-200">Generating your matchup image...</p>
                 </div>
               ) : error ? (
-                <div className="flex flex-col items-center justify-center h-[1024px]">
+                <div className="flex flex-col items-center justify-center min-h-[50vh] md:h-[1024px]">
                   <div className="text-red-400 mb-4">⚠️ {error}</div>
                   <button
                     onClick={() => {
@@ -243,17 +243,63 @@ function App() {
                   </button>
                 </div>
               ) : matchupImage ? (
-                <div className="relative w-full flex justify-center">
-                  <div className="w-[1024px] h-[1024px] rounded-lg overflow-hidden">
+                <div className="relative w-full flex justify-center group">
+                  <div className="w-full md:w-[1024px] aspect-square rounded-lg overflow-hidden relative">
                     <img 
                       src={matchupImage} 
                       alt={`${team1} vs ${team2} matchup`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:shadow-lg transition-shadow"
                     />
+                    {/* Controls in top-right corner */}
+                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                      <a
+                        href={matchupImage}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-black/0 hover:bg-black/50 transition-colors cursor-pointer"
+                        title="Open Image in New Tab"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.open(matchupImage, '_blank');
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white drop-shadow-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                      </a>
+                      <button
+                        onClick={() => {
+                          if (navigator.share) {
+                            navigator.share({
+                              title: `${team1} vs ${team2} Matchup`,
+                              text: `Check out this epic matchup between ${team1} and ${team2}!`,
+                              url: matchupImage
+                            }).catch(console.error);
+                          } else {
+                            navigator.clipboard.writeText(matchupImage).then(() => {
+                              alert('Image URL copied to clipboard!');
+                            }).catch(console.error);
+                          }
+                        }}
+                        className="p-2 rounded-full bg-black/0 hover:bg-black/50 transition-colors"
+                        title="Share Image"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white drop-shadow-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="18" cy="5" r="3" />
+                          <circle cx="6" cy="12" r="3" />
+                          <circle cx="18" cy="19" r="3" />
+                          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-[1024px] text-blue-200">
+                <div className="flex flex-col items-center justify-center min-h-[50vh] md:h-[1024px] text-blue-200">
                   <p>Image will appear here once generated</p>
                 </div>
               )}
