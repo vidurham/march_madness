@@ -297,6 +297,11 @@ function App() {
                       </button>
                     </div>
                   </div>
+                  {/* Save instructions */}
+                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-sm text-blue-200 whitespace-nowrap">
+                    <p className="md:hidden">Hold the image to save to your device</p>
+                    <p className="hidden md:block">Right click to save image</p>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] md:h-[1024px] text-blue-200">
