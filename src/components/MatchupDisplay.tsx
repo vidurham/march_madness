@@ -43,7 +43,6 @@ const MatchupDisplay: React.FC<MatchupProps> = ({ team1, team2, onReset }) => {
               <BasketballIcon className="h-16 w-16 text-white fallback-icon hidden" />
             </div>
             <div className="text-3xl font-bold mb-2">{team1.name}</div>
-            <div className="text-xl text-orange-400 mb-4">{team1.mascot}</div>
             <div className="text-sm opacity-75 space-y-1">
               <div className="bg-white/5 rounded-full py-1 px-4">{team1.conference}</div>
               <div className="bg-white/5 rounded-full py-1 px-4">{team1.colors}</div>
@@ -78,7 +77,6 @@ const MatchupDisplay: React.FC<MatchupProps> = ({ team1, team2, onReset }) => {
               <BasketballIcon className="h-16 w-16 text-white fallback-icon hidden" />
             </div>
             <div className="text-3xl font-bold mb-2">{team2.name}</div>
-            <div className="text-xl text-orange-400 mb-4">{team2.mascot}</div>
             <div className="text-sm opacity-75 space-y-1">
               <div className="bg-white/5 rounded-full py-1 px-4">{team2.conference}</div>
               <div className="bg-white/5 rounded-full py-1 px-4">{team2.colors}</div>
@@ -93,7 +91,7 @@ const MatchupDisplay: React.FC<MatchupProps> = ({ team1, team2, onReset }) => {
         </div>
         <div className="text-blue-300 flex items-center justify-center gap-2">
           <BasketballIcon className="h-4 w-4 animate-bounce" />
-          {team1.mascot} vs {team2.mascot} - Who will advance?
+          {team1.name} vs {team2.name}
           <BasketballIcon className="h-4 w-4 animate-bounce" />
         </div>
       </div>

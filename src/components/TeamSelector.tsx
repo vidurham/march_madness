@@ -1,5 +1,5 @@
-import React from 'react';
-import { CircleDot as BasketballIcon } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { CircleDot as BasketballIcon, Search, X } from 'lucide-react';
 import { Team } from '../types';
 
 interface TeamSelectorProps {
@@ -15,7 +15,11 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
   onSelectTeam,
   teams
 }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeConference, setActiveConference] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
   const selectedTeamData = teams.find(t => t.name === selectedTeam);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Group teams by conference
   const teamsByConference = teams.reduce((acc, team) => {
@@ -35,6 +39,32 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
     count: teamsByConference[conf].length
   }));
 
+  // Filter teams based on search term and active conference
+  const filteredTeams = teams.filter(team => {
+    const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesConference = !activeConference || team.conference === activeConference;
+    return matchesSearch && matchesConference;
+  });
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setShowDropdown(value.length >= 3);
+  };
+
+  // Handle clicking outside of dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="w-full max-w-xs">
       <label className="block text-sm font-medium mb-2 flex items-center gap-2">
@@ -42,17 +72,80 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
         {label}
       </label>
 
-      {/* Conference List Display */}
+      {/* Search Input */}
+      <div className="relative mb-4">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onFocus={() => searchTerm.length >= 3 && setShowDropdown(true)}
+          placeholder="Search teams..."
+          className="w-full px-4 py-2 pl-10 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500"
+        />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+        {searchTerm && (
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setShowDropdown(false);
+            }}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Conference List */}
       <div className="mb-4 max-h-32 overflow-y-auto bg-white/5 rounded-lg p-2 text-xs space-y-1">
+        <div 
+          onClick={() => setActiveConference(null)}
+          className={`flex justify-between items-center text-blue-200 px-2 py-1 rounded cursor-pointer hover:bg-white/10 transition-colors
+            ${!activeConference ? 'bg-orange-500/20 text-orange-300' : ''}`}
+        >
+          <span>All Teams</span>
+          <span className="text-orange-400">{teams.length} teams</span>
+        </div>
         {conferenceCounts.map(({ name, count }) => (
-          <div key={name} className="flex justify-between items-center text-blue-200 px-2 py-1 rounded hover:bg-white/5">
+          <div
+            key={name}
+            onClick={() => setActiveConference(name === activeConference ? null : name)}
+            className={`flex justify-between items-center text-blue-200 px-2 py-1 rounded cursor-pointer hover:bg-white/10 transition-colors
+              ${name === activeConference ? 'bg-orange-500/20 text-orange-300' : ''}`}
+          >
             <span>{name}</span>
             <span className="text-orange-400">{count} teams</span>
           </div>
         ))}
       </div>
 
-      <div className="relative">
+      {/* Teams Dropdown */}
+      <div className="relative" ref={dropdownRef}>
+        {showDropdown && searchTerm.length >= 3 && (
+          <div className="absolute z-10 w-full max-h-60 overflow-y-auto rounded-lg bg-blue-900/95 backdrop-blur-sm border border-white/20 shadow-xl">
+            {filteredTeams.length > 0 ? (
+              filteredTeams
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((team) => (
+                  <div
+                    key={team.name}
+                    onClick={() => {
+                      onSelectTeam(team.name);
+                      setShowDropdown(false);
+                      setSearchTerm('');
+                    }}
+                    className="px-4 py-2 cursor-pointer hover:bg-white/10 text-white flex items-center justify-between"
+                  >
+                    <span>{team.name}</span>
+                    <span className="text-sm text-blue-200">{team.conference}</span>
+                  </div>
+                ))
+            ) : (
+              <div className="px-4 py-2 text-white/50">No teams found</div>
+            )}
+          </div>
+        )}
+        
         <select
           value={selectedTeam}
           onChange={(e) => onSelectTeam(e.target.value)}
@@ -64,22 +157,19 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
             appearance-none`}
         >
           <option value="" className="bg-blue-900">Select a team...</option>
-          {sortedConferences.map((conference) => (
-            <optgroup key={conference} label={`${conference} (${teamsByConference[conference].length} teams)`}>
-              {teamsByConference[conference]
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((team) => (
-                  <option key={team.name} value={team.name} className="bg-blue-900">
-                    {team.name} {team.mascot}
-                  </option>
-                ))}
-            </optgroup>
-          ))}
+          {filteredTeams
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((team) => (
+              <option key={team.name} value={team.name} className="bg-blue-900">
+                {team.name}
+              </option>
+            ))}
         </select>
         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
           <div className="border-l-2 border-t-2 border-white/50 w-2 h-2 transform rotate-135"></div>
         </div>
       </div>
+
       {selectedTeamData && (
         <div className="mt-2 text-sm text-blue-200">
           <div className="flex items-center gap-1">

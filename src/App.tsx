@@ -6,9 +6,40 @@ import MatchupDisplay from './components/MatchupDisplay';
 import { UNIQUE_NCAA_TEAMS } from './utils/team-utils';
 import { Team } from './types';
 
+// Define prompt types
+const PROMPT_TYPES = {
+  CLASSIC_STADIUM: {
+    label: "Classic Basketball Stadium",
+    generate: (team1: Team, team2: Team) => 
+      `Create a dynamic basketball matchup promotional image featuring the ${team1.name} in ${team1.colors} versus the ${team2.name} in ${team2.colors} in a modern basketball arena. Show the teams facing off with dramatic lighting and a packed stadium in the background. Make it look like a professional sports promotional poster.`
+  },
+  VINTAGE_PROGRAM: {
+    label: "Vintage Basketball Program",
+    generate: (team1: Team, team2: Team) => 
+      `Create a vintage basketball program cover featuring ${team1.name} in ${team1.colors} vs ${team2.name} in ${team2.colors} Use retro typography, aged paper texture, and classic illustration style reminiscent of old sports programs. Include art deco elements and weathered effects.`
+  },
+  ANCIENT_ARENA: {
+    label: "Ancient Colosseum Mascot Battle",
+    generate: (team1: Team, team2: Team) => 
+      `Create an epic basketball matchup image featuring a monster ${team1.mascot} in ${team1.colors} versus a monster ${team2.mascot} in ${team2.colors} in a magnificent ancient Roman colosseum setting. Combine classical architecture with basketball elements, dramatic lighting, and a sense of historical grandeur. Include marble columns, stone archways, and ancient spectators.`
+  },
+  MYTHICAL_BATTLE: {
+    label: "Mythical Mascot Battle",
+    generate: (team1: Team, team2: Team) => 
+      `Create an epic fantasy battle scene featuring a giant ${team1.mascot} in ${team1.colors} armor facing off against a giant ${team2.mascot} in ${team2.colors} armor. Set in a mythical realm with magical elements, dramatic lighting, and fantasy landscape. Make it look like an epic clash between legendary creatures, while incorporating basketball elements subtly in their armor or weapons. Include magical effects and mystical atmosphere.`
+  },
+  CELESTIAL_ARENA: {
+    label: "Celestial Arena",
+    generate: (team1: Team, team2: Team) => 
+      `Create a cosmic basketball matchup image featuring ${team1.name} in ${team1.colors} versus ${team2.name} in ${team2.colors} in a spectacular celestial arena. Show the teams competing in a basketball court floating in space, surrounded by galaxies, nebulae, and cosmic phenomena. Include dramatic lighting effects and stellar elements.`
+  },
+} as const;
+
+type PromptType = keyof typeof PROMPT_TYPES;
+
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true // Note: In production, you should use a backend service
 });
 
@@ -18,15 +49,18 @@ function App() {
   const [showMatchup, setShowMatchup] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [matchupImage, setMatchupImage] = useState('');
+  const [selectedPromptType, setSelectedPromptType] = useState<PromptType>('CLASSIC_STADIUM');
+  const [error, setError] = useState<string | null>(null);
 
   const generateDallePrompt = (team1: Team, team2: Team) => {
-    return `Create a dynamic basketball matchup promotional image featuring ${team1.mascot} in ${team1.colors} colors versus ${team2.mascot} in ${team2.colors} colors. The image should be dramatic and epic in style, showing both mascots in a basketball arena setting with dramatic lighting. Make it look like a professional sports promotional poster.`;
+    return PROMPT_TYPES[selectedPromptType].generate(team1, team2);
   };
 
   const handleCreateMatchup = async () => {
     if (team1 && team2) {
       setShowMatchup(true);
       setGeneratingImage(true);
+      setError(null); // Reset error state
       try {
         const team1Data = UNIQUE_NCAA_TEAMS.find((t: Team) => t.name === team1);
         const team2Data = UNIQUE_NCAA_TEAMS.find((t: Team) => t.name === team2);
@@ -35,23 +69,32 @@ function App() {
 
         const prompt = generateDallePrompt(team1Data, team2Data);
         
+        // Add console log to see the request configuration
+        console.log('DALL-E Request Configuration:', {
+          model: "dall-e-3",
+          prompt: prompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "standard"
+        });
+
         const response = await openai.images.generate({
           model: "dall-e-3",
           prompt: prompt,
           n: 1,
           size: "1024x1024",
-          quality: "standard",
-          style: "vivid"
+          quality: "standard"
         });
 
         if (response.data[0]?.url) {
           setMatchupImage(response.data[0].url);
         } else {
-          throw new Error('No image generated');
+          throw new Error('No image was generated');
         }
       } catch (error) {
         console.error('Failed to generate image:', error);
-        // You might want to show an error message to the user here
+        setError(error instanceof Error ? error.message : 'Failed to generate image. Please try again.');
+        setMatchupImage(''); // Clear any previous image
       } finally {
         setGeneratingImage(false);
       }
@@ -63,6 +106,7 @@ function App() {
     setTeam1('');
     setTeam2('');
     setMatchupImage('');
+    setError(null);
   };
 
   // Helper function to get primary color from team colors
@@ -129,6 +173,25 @@ function App() {
                 teams={UNIQUE_NCAA_TEAMS}
               />
             </div>
+
+            {/* Add Prompt Type Selector */}
+            <div className="mt-8 text-center">
+              <label htmlFor="promptType" className="block text-lg mb-2 text-blue-100">
+                Select Matchup Style
+              </label>
+              <select
+                id="promptType"
+                value={selectedPromptType}
+                onChange={(e) => setSelectedPromptType(e.target.value as PromptType)}
+                className="w-full max-w-md px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                {Object.entries(PROMPT_TYPES).map(([key, { label }]) => (
+                  <option key={key} value={key} className="bg-blue-900">
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
             
             <div className="mt-10 text-center">
               <button
@@ -162,20 +225,35 @@ function App() {
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 shadow-xl border border-white/20">
               <h2 className="text-2xl font-bold text-center mb-4">AI Generated Matchup Visual</h2>
               {generatingImage ? (
-                <div className="flex flex-col items-center justify-center h-64">
+                <div className="flex flex-col items-center justify-center h-[1024px]">
                   <BasketballIcon className="h-12 w-12 text-orange-500 animate-spin" />
                   <p className="mt-4 text-blue-200">Generating your matchup image...</p>
                 </div>
+              ) : error ? (
+                <div className="flex flex-col items-center justify-center h-[1024px]">
+                  <div className="text-red-400 mb-4">⚠️ {error}</div>
+                  <button
+                    onClick={() => {
+                      setError(null);
+                      handleCreateMatchup();
+                    }}
+                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-full text-sm transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
               ) : matchupImage ? (
-                <div className="relative aspect-video rounded-lg overflow-hidden">
-                  <img 
-                    src={matchupImage} 
-                    alt={`${team1} vs ${team2} matchup`}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="relative w-full flex justify-center">
+                  <div className="w-[1024px] h-[1024px] rounded-lg overflow-hidden">
+                    <img 
+                      src={matchupImage} 
+                      alt={`${team1} vs ${team2} matchup`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-64 text-blue-200">
+                <div className="flex flex-col items-center justify-center h-[1024px] text-blue-200">
                   <p>Image will appear here once generated</p>
                 </div>
               )}

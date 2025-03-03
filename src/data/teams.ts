@@ -474,7 +474,7 @@ const ACC_TEAMS: Team[] = [
     logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/152.png"
   },
   {
-    name: "Boston College",
+    name: "Boston College Eagles",
     mascot: "Eagles",
     colors: "Maroon and Gold",
     conference: "ACC",
