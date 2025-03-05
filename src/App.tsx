@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CircleDot as BasketballIcon, Trophy, ArrowRight, Bell as WhistleIcon } from 'lucide-react';
+import { CircleDot as BasketballIcon, Trophy, ArrowRight, Bell as WhistleIcon, Castle, Wand2, Stars, Home, Scroll } from 'lucide-react';
 import OpenAI from 'openai';
 import { Analytics } from '@vercel/analytics/react';
 import TeamSelector from './components/TeamSelector';
@@ -11,26 +11,36 @@ import { Team } from './types';
 const PROMPT_TYPES = {
   CLASSIC_STADIUM: {
     label: "Classic Basketball Stadium",
+    icon: Home,
+    description: "Professional sports arena with dramatic lighting",
     generate: (team1: Team, team2: Team) => 
       `Create a dynamic basketball matchup promotional image featuring the ${team1.name} in ${team1.colors} versus the ${team2.name} in ${team2.colors} in a modern basketball arena. Show the teams facing off with dramatic lighting and a packed stadium in the background. Make it look like a professional sports promotional poster.`
   },
   VINTAGE_PROGRAM: {
     label: "Vintage Basketball Program",
+    icon: Scroll,
+    description: "Retro style with aged paper texture",
     generate: (team1: Team, team2: Team) => 
       `Create a vintage basketball program cover featuring ${team1.name} in ${team1.colors} vs ${team2.name} in ${team2.colors} Use retro typography, aged paper texture, and classic illustration style reminiscent of old sports programs. Include art deco elements and weathered effects.`
   },
   ANCIENT_ARENA: {
     label: "Ancient Colosseum Mascot Battle",
+    icon: Castle,
+    description: "Epic battle in a Roman colosseum",
     generate: (team1: Team, team2: Team) => 
       `Create an epic basketball matchup image featuring a monster ${team1.mascot} in ${team1.colors} versus a monster ${team2.mascot} in ${team2.colors} in a magnificent ancient Roman colosseum setting. Combine classical architecture with basketball elements, dramatic lighting, and a sense of historical grandeur. Include marble columns, stone archways, and ancient spectators.`
   },
   MYTHICAL_BATTLE: {
     label: "Mythical Mascot Battle",
+    icon: Wand2,
+    description: "Fantasy realm with magical elements",
     generate: (team1: Team, team2: Team) => 
       `Create an epic fantasy battle scene featuring a giant ${team1.mascot} in ${team1.colors} armor facing off against a giant ${team2.mascot} in ${team2.colors} armor. Set in a mythical realm with magical elements, dramatic lighting, and fantasy landscape. Make it look like an epic clash between legendary creatures, while incorporating basketball elements subtly in their armor or weapons. Include magical effects and mystical atmosphere.`
   },
   CELESTIAL_ARENA: {
     label: "Celestial Arena",
+    icon: Stars,
+    description: "Cosmic court floating in space",
     generate: (team1: Team, team2: Team) => 
       `Create a cosmic basketball matchup image featuring ${team1.name} in ${team1.colors} versus ${team2.name} in ${team2.colors} in a spectacular celestial arena. Show the teams competing in a basketball court floating in space, surrounded by galaxies, nebulae, and cosmic phenomena. Try to include ${team1.mascot} and ${team2.mascot} in the image in some way.`
   },
@@ -177,22 +187,29 @@ function App() {
             </div>
 
             {/* Add Prompt Type Selector */}
-            <div className="mt-8 text-center">
-              <label htmlFor="promptType" className="block text-lg mb-2 text-blue-100">
+            <div className="mt-8">
+              <label htmlFor="promptType" className="block text-lg mb-4 text-blue-100 text-center">
                 Select Matchup Style
               </label>
-              <select
-                id="promptType"
-                value={selectedPromptType}
-                onChange={(e) => setSelectedPromptType(e.target.value as PromptType)}
-                className="w-full max-w-md px-4 py-2 rounded-lg bg-blue-900/95 backdrop-blur-sm border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
-              >
-                {Object.entries(PROMPT_TYPES).map(([key, { label }]) => (
-                  <option key={key} value={key} className="bg-blue-900 text-white">
-                    {label}
-                  </option>
-                ))}
-              </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                {Object.entries(PROMPT_TYPES).map(([key, { label, icon: Icon, description }]) => {
+                  const isSelected = key === selectedPromptType;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedPromptType(key as PromptType)}
+                      className={`flex flex-col items-center p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105
+                        ${isSelected 
+                          ? 'bg-orange-500/20 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]' 
+                          : 'bg-blue-900/50 border-white/20 hover:border-white/40'}`}
+                    >
+                      <Icon className={`h-8 w-8 mb-2 ${isSelected ? 'text-orange-400' : 'text-white/70'}`} />
+                      <h3 className="font-semibold mb-1">{label}</h3>
+                      <p className="text-sm text-blue-200 text-center">{description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             
             <div className="mt-10 text-center">
